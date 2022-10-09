@@ -32,7 +32,7 @@ public class EmailService implements EmailSender{
             helper.setFrom("tasty@treat.com");
             mailSender.send(mimeMessage);
         }catch (MessagingException e){
-            LOGGER.error("fail to send email", e);
+            LOGGER.error("failed to send email", e);
             throw new IllegalStateException("failed to send email");
         }
     }
