@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -58,5 +59,31 @@ public class AppUserService implements UserDetailsService {
     public int enableAppUser(String email){
         return appUserRepo.enableAppUser(email);
     }
+
+
+    public void deleteStudent(AppUser appUser){
+        boolean userexists = appUserRepo.findByEmail(appUser.getEmail()).isPresent();
+        if(!userexists){
+            throw new IllegalStateException("user doesn't exists.");
+        }
+        appUserRepo.delete(appUser);
+    }
+
+    public void updateAppUser(Long userId,String firstname, String lastname, String email, String password){
+        AppUser appUser = appUserRepo.findByEmail(email).orElseThrow(()-> new IllegalStateException(
+                "User does not exist!"
+        ));
+
+        if(firstname!=null && firstname.length()>0 && !Objects.equals(appUser.getFirstName(),firstname)){
+            appUser.setFirstName(firstname);
+        }
+
+        if(lastname!=null && lastname.length()>0 && !Objects.equals(appUser.getLastName(), lastname)){
+            appUser.setLastName(lastname);
+        }
+
+
+    }
+
 
 }
