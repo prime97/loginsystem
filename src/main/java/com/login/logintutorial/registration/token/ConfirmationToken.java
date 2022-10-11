@@ -4,6 +4,9 @@ import com.login.logintutorial.appuser.AppUser;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
+@Component
 public class ConfirmationToken {
 
     @SequenceGenerator(name="confirmation_token_sequence",
@@ -30,6 +34,7 @@ public class ConfirmationToken {
     private LocalDateTime expiresAt;
     private LocalDateTime confirmedAt;
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToOne
     @JoinColumn(
             nullable = false,
@@ -45,4 +50,6 @@ public class ConfirmationToken {
 
         this.appUser = appUser;
     }
+
+
 }

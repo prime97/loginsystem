@@ -1,6 +1,7 @@
 package com.login.logintutorial.appuser;
 
 import com.login.logintutorial.registration.token.ConfirmationToken;
+import com.login.logintutorial.registration.token.ConfirmationTokenRepository;
 import com.login.logintutorial.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,9 +9,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,7 +24,11 @@ public class AppUserService implements UserDetailsService {
 
     private final static String USER_NOT_FOUND_MSG = "User with email % not found";
     private final AppUserRepo appUserRepo;
+
+    private  final ConfirmationToken confirmationToken;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final ConfirmationTokenRepository confirmationTokenRepository;
 
     private final ConfirmationTokenService confirmationTokenService;
 
@@ -61,29 +69,44 @@ public class AppUserService implements UserDetailsService {
     }
 
 
-    public void deleteStudent(AppUser appUser){
-        boolean userexists = appUserRepo.findByEmail(appUser.getEmail()).isPresent();
-        if(!userexists){
-            throw new IllegalStateException("user doesn't exists.");
-        }
-        appUserRepo.delete(appUser);
-    }
+    public void deleteUser(String email){
 
-    public void updateAppUser(Long userId,String firstname, String lastname, String email, String password){
-        AppUser appUser = appUserRepo.findByEmail(email).orElseThrow(()-> new IllegalStateException(
-                "User does not exist!"
-        ));
 
-        if(firstname!=null && firstname.length()>0 && !Objects.equals(appUser.getFirstName(),firstname)){
-            appUser.setFirstName(firstname);
-        }
+        AppUser user = appUserRepo.findByEmail(email).orElseThrow();
+        //code for user != null
+        if(user.isEnabled()){
 
-        if(lastname!=null && lastname.length()>0 && !Objects.equals(appUser.getLastName(), lastname)){
-            appUser.setLastName(lastname);
         }
+         //throw new IllegalStateException("User profile does not exist or is not confirmed");
+        appUserRepo.delete(user);
+        deleteMessage();
+        //System.out.println(user);
+
 
 
     }
 
+    public List<AppUser>getUsers(){
+        return appUserRepo.findAll();
+    }
 
-}
+    public String deleteMessage(){
+        return "the user profile has been deleted "  ;
+    }
+
+
+    public AppUser updateAppUser(AppUser appUser){
+        AppUser appUser1 = appUserRepo.findById(appUser.getId()).get();
+
+        appUser1.setFirstName(appUser.getFirstName());
+        appUser1.setLastName(appUser.getLastName());
+        appUser1.setEmail(appUser.getEmail());
+        String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
+        appUser1.setPassword(encodedPassword);
+        
+        return appUserRepo.save(appUser);
+    }
+
+
+
+    }
